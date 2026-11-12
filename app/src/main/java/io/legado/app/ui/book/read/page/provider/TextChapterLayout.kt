@@ -2739,12 +2739,15 @@ class TextChapterLayout(
      * 已是气泡 URL 或开关关闭时返回原始 src 和 null click。
      */
     private fun tryParseForcedBubbleSrcWithClick(src: String): ForcedBubbleResult {
-        if (!AppConfig.forceSoftwareParagraphBubble) return ForcedBubbleResult(src, null)
-        if (ParagraphBubbleRenderer.isBubbleSrc(src)) return ForcedBubbleResult(src, null)
-        // dp: 协议快速解析（如 dp:12,{"pclick":"...","status":"normal"}）
+        // 1. dp: 协议无条件解析——不受开关影响
         if (src.startsWith(PARAGRAPH_BUBBLE_PREFIX, ignoreCase = true)) {
             return parseParagraphBubble(src)
         }
+        // 2. 其他情况才看开关
+        if (!AppConfig.forceSoftwareParagraphBubble) return ForcedBubbleResult(src, null)
+        // 3. 已是气泡 URL 直接返回
+        if (ParagraphBubbleRenderer.isBubbleSrc(src)) return ForcedBubbleResult(src, null)
+        // 4. 其他强制气泡候选（type=qd / clickLike / data-svg 等）
         val urlMatcher = paramPattern.matcher(src)
         if (!urlMatcher.find()) return ForcedBubbleResult(src, null)
         val renderSrc = src.substring(0, urlMatcher.start())
@@ -2914,7 +2917,7 @@ class TextChapterLayout(
      * 执行失败时保持原 src 不变（走原有逻辑），不重试不缓存。
      */
     private suspend fun preprocessBubbleJs(contents: List<String>): List<String> {
-        if (!AppConfig.forceSoftwareParagraphBubble) return contents
+//        if (!AppConfig.forceSoftwareParagraphBubble) return contents
         val source = ReadBook.bookSource ?: return contents
 
         // 限制气泡 js 执行并发：对话生成气泡场景下几乎每段正文都是含 js 字段的气泡，
@@ -2965,7 +2968,15 @@ class TextChapterLayout(
             val (start, end, originalSrc) = tasks[i]
             val newRenderSrc = results[i]
             if (newRenderSrc != null && newRenderSrc != originalSrc) {
-                // 从 originalSrc 中分离出 option 部分，拼装成 "newRenderSrc,option"
+                // 关键策略：
+                // · 开关关闭 —— 只接受 js 返回的 dp: 协议结果（js 生成的段评气泡）；
+                //   其他 js 返回一律不替换，保持"其他 SVG 不强制软件气泡"的原貌。
+                // · 开关打开 —— 所有 js 返回都替换，走原强制软件气泡逻辑。
+                val isDpResult = newRenderSrc.trimStart()
+                    .startsWith(PARAGRAPH_BUBBLE_PREFIX, ignoreCase = true)
+                if (!AppConfig.forceSoftwareParagraphBubble && !isDpResult) {
+                    continue
+                }
                 val urlMatcher = paramPattern.matcher(originalSrc)
                 if (urlMatcher.find()) {
                     val optionStr = originalSrc.substring(urlMatcher.end())
