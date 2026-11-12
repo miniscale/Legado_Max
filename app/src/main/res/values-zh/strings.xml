@@ -2515,6 +2515,8 @@
     <string name="bubble_svg_template_title">SVG 模板</string>
     <string name="bubble_source_builtin">内置</string>
     <string name="bubble_source_local">本地</string>
+    <string name="bubble_dp_protocol">dp 协议气泡</string>
+    <string name="bubble_dp_protocol_summary">识别 dp: 协议的段评气泡，默认开启；关闭后 dp 协议气泡将不再显示</string>
     <string name="bubble_force_software">强制使用软件气泡</string>
     <string name="bubble_force_software_summary">识别正文图片形式的段评入口，并使用当前气泡样式渲染</string>
     <string name="app_theme_config_too_large">应用主题配置文件过大</string>

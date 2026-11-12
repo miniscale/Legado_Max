@@ -2531,6 +2531,8 @@
     <string name="bubble_svg_template_title">SVG template</string>
     <string name="bubble_source_builtin">Builtin</string>
     <string name="bubble_source_local">Local</string>
+    <string name="bubble_dp_protocol">dp agreement bubble</string>
+    <string name="bubble_dp_protocol_summary">DP Recognition: The protocol’s segment comment bubble is enabled by default; when disabled, the DP protocol bubble will no longer be displayed.</string>
     <string name="bubble_force_software">Force software bubble</string>
     <string name="bubble_force_software_summary">Detect inline image-based paragraph review entries and render with current bubble style</string>
     <string name="app_theme_config_too_large">App theme config file too large</string>

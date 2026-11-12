@@ -2739,15 +2739,14 @@ class TextChapterLayout(
      * 已是气泡 URL 或开关关闭时返回原始 src 和 null click。
      */
     private fun tryParseForcedBubbleSrcWithClick(src: String): ForcedBubbleResult {
-        // 1. dp: 协议无条件解析——不受开关影响
+        // 1. dp: 协议 —— 由独立的 dpProtocolEnabled 控制（默认开启，无需打开强制软件气泡）
         if (src.startsWith(PARAGRAPH_BUBBLE_PREFIX, ignoreCase = true)) {
+            if (!AppConfig.dpProtocolEnabled) return ForcedBubbleResult(src, null)
             return parseParagraphBubble(src)
         }
-        // 2. 其他情况才看开关
+        // 2. 其他强制软件气泡 —— 由 forceSoftwareParagraphBubble 控制
         if (!AppConfig.forceSoftwareParagraphBubble) return ForcedBubbleResult(src, null)
-        // 3. 已是气泡 URL 直接返回
         if (ParagraphBubbleRenderer.isBubbleSrc(src)) return ForcedBubbleResult(src, null)
-        // 4. 其他强制气泡候选（type=qd / clickLike / data-svg 等）
         val urlMatcher = paramPattern.matcher(src)
         if (!urlMatcher.find()) return ForcedBubbleResult(src, null)
         val renderSrc = src.substring(0, urlMatcher.start())
@@ -2917,17 +2916,10 @@ class TextChapterLayout(
      * 执行失败时保持原 src 不变（走原有逻辑），不重试不缓存。
      */
     private suspend fun preprocessBubbleJs(contents: List<String>): List<String> {
-//        if (!AppConfig.forceSoftwareParagraphBubble) return contents
+        // 不再因为 forceSoftwareParagraphBubble=false 而提前返回：
+        // js 可能返回 dp: 协议结果，开关关闭时这条路径也必须执行
         val source = ReadBook.bookSource ?: return contents
-
-        // 限制气泡 js 执行并发：对话生成气泡场景下几乎每段正文都是含 js 字段的气泡，
-        // 全量并行执行会在瞬间向书源服务器发起大量请求（js 内含 java.ajax 等网络调用），
-        // 触发服务器限流/过载返回 HTML 错误页，连带正文的 /content 请求也拿到 HTML，
-        // 导致书源规则里的 JSON.parse 抛出
-        // "SyntaxError: Unexpected token: <"（表现为获取正文失败，刷新后可恢复）。
         val jsSemaphore = Semaphore(BUBBLE_JS_MAX_CONCURRENCY)
-
-        // 并行处理每个段落
         return contents.map { content ->
             scope.async { preprocessBubbleJsInText(content, source, jsSemaphore) }
         }.awaitAll()
@@ -2968,20 +2960,15 @@ class TextChapterLayout(
             val (start, end, originalSrc) = tasks[i]
             val newRenderSrc = results[i]
             if (newRenderSrc != null && newRenderSrc != originalSrc) {
-                // 关键策略：
-                // · 开关关闭 —— 只接受 js 返回的 dp: 协议结果（js 生成的段评气泡）；
-                //   其他 js 返回一律不替换，保持"其他 SVG 不强制软件气泡"的原貌。
-                // · 开关打开 —— 所有 js 返回都替换，走原强制软件气泡逻辑。
                 val isDpResult = newRenderSrc.trimStart()
                     .startsWith(PARAGRAPH_BUBBLE_PREFIX, ignoreCase = true)
-                if (!AppConfig.forceSoftwareParagraphBubble && !isDpResult) {
-                    continue
-                }
+                // 开关关闭时只接受 dp: 协议结果；开关打开时全部接受
+                if (!AppConfig.forceSoftwareParagraphBubble && !isDpResult) continue
                 val urlMatcher = paramPattern.matcher(originalSrc)
                 if (urlMatcher.find()) {
                     val optionStr = originalSrc.substring(urlMatcher.end())
-                    val replaced = "$newRenderSrc,$optionStr"
-                    result = result.substring(0, start) + replaced + result.substring(end)
+                    result = result.substring(0, start) + "$newRenderSrc,$optionStr" +
+                            result.substring(end)
                 }
             }
         }
