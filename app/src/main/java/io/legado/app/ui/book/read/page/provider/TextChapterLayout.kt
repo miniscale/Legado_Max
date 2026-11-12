@@ -2954,7 +2954,6 @@ class TextChapterLayout(
             }
         }.awaitAll()
 
-        // 按位置倒序替换，避免偏移问题
         var result = text
         for (i in tasks.indices.reversed()) {
             val (start, end, originalSrc) = tasks[i]
