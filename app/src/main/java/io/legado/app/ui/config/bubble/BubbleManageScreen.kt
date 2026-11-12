@@ -41,7 +41,19 @@ import io.legado.app.ui.widget.components.dialog.AppConfirmDialog
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.ui.unit.dp
+import io.legado.app.help.config.AppConfig
 /** 气泡管理页的对外回调。 */
 data class BubbleManageActions(
     val onBackClick: () -> Unit = {},
@@ -75,7 +87,13 @@ fun BubbleManageScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     var pendingDelete by remember { mutableStateOf<List<BubblePackageManager.Entry>>(emptyList()) }
     var showUrlDialog by remember { mutableStateOf(false) }
-
+// 两个开关的状态：以 AppConfig 为数据源，Compose 侧只做一次初值读取
+    var forceSoftwareBubble by remember {
+        mutableStateOf(AppConfig.forceSoftwareParagraphBubble)
+    }
+    var dpProtocolEnabled by remember {
+        mutableStateOf(AppConfig.dpProtocolEnabled)
+    }
     LaunchedEffect(Unit) { viewModel.load() }
 
     LaunchedEffect(lifecycleOwner) {
@@ -144,22 +162,60 @@ fun BubbleManageScreen(
             )
         },
     ) { contentPadding ->
-        BubbleList(
-            items = items,
-            state = state,
-            activeDirName = activeDirName,
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(contentPadding),
-            onApply = viewModel::applyEntry,
-            onEdit = viewModel::startEdit,
-            onDelete = { pendingDelete = listOf(it) },
-            onToTop = { viewModel.toTopEntries(listOf(it)) },
-            onExport = { viewModel.exportZip(listOf(it)) },
-            onShare = viewModel::shareJson,
-            onLongClick = { state.enterMultiSelect(it.dirName) },
-            onToggleSelect = { state.toggleSelection(it.dirName) },
-        )
+                .padding(contentPadding)
+        ) {
+            // 顶部说明文字
+            Text(
+                text = stringResource(R.string.bubble_manage_summary),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            )
+            // 强制软件气泡开关（已有字符串，直接使用）
+            BubbleToggleCard(
+                title = stringResource(R.string.bubble_force_software),
+                summary = stringResource(R.string.bubble_force_software_summary),
+                checked = forceSoftwareBubble,
+                onCheckedChange = {
+                    forceSoftwareBubble = it
+                    AppConfig.forceSoftwareParagraphBubble = it
+                },
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            // dp 协议开关（默认开启）
+            BubbleToggleCard(
+                title = stringResource(R.string.bubble_dp_protocol),
+                summary = stringResource(R.string.bubble_dp_protocol_summary),
+                checked = dpProtocolEnabled,
+                onCheckedChange = {
+                    dpProtocolEnabled = it
+                    AppConfig.dpProtocolEnabled = it
+                },
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            // 气泡列表占据剩余空间
+            BubbleList(
+                items = items,
+                state = state,
+                activeDirName = activeDirName,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                onApply = viewModel::applyEntry,
+                onEdit = viewModel::startEdit,
+                onDelete = { pendingDelete = listOf(it) },
+                onToTop = { viewModel.toTopEntries(listOf(it)) },
+                onExport = { viewModel.exportZip(listOf(it)) },
+                onShare = viewModel::shareJson,
+                onLongClick = { state.enterMultiSelect(it.dirName) },
+                onToggleSelect = { state.toggleSelection(it.dirName) },
+            )
+        }
     }
 
     draft?.let { config ->
@@ -310,4 +366,45 @@ private fun BubbleCard(
             )
         },
     )
+}
+@Composable
+private fun BubbleToggleCard(
+    title: String,
+    summary: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = summary,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Switch(
+                checked = checked,
+                onCheckedChange = onCheckedChange,
+            )
+        }
+    }
 }

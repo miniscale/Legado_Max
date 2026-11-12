@@ -1329,4 +1329,16 @@ object AppConfig : SharedPreferences.OnSharedPreferenceChangeListener {
         set(value) {
             appCtx.putPrefBoolean(PreferKey.forceSoftwareParagraphBubble, value)
         }
+
+    /**
+     * dp: 协议气泡总开关，默认开启。
+     *
+     * 关闭后 [io.legado.app.ui.book.read.page.provider.TextChapterLayout] 中的
+     * parseParagraphBubble 不再参与排版，dp 协议气泡会以原图样式显示。
+     */
+    var dpProtocolEnabled: Boolean
+        get() = appCtx.getPrefBoolean("dpProtocolEnabled", true)
+        set(value) {
+            appCtx.putPrefBoolean("dpProtocolEnabled", value)
+        }
 }
