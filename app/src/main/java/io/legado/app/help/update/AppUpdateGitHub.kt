@@ -28,8 +28,8 @@ object AppUpdateGitHub : AppUpdate.AppUpdateInterface {
         }
 
     private suspend fun getLatestRelease(): List<AppReleaseInfo> {
-        // 更新源：Suml-1/Legado_Max 的 GitHub Releases（含预发布），按发布时间倒序，由下游按变体筛选最新
-        val lastReleaseUrl = "https://api.github.com/repos/Suml-1/Legado_Max/releases?per_page=20"
+        // 更新源：miniscale/Legado_Max 的 GitHub Releases（含预发布），按发布时间倒序，由下游按变体筛选最新
+        val lastReleaseUrl = "https://api.github.com/repos/miniscale/Legado_Max/releases?per_page=20"
         val res = okHttpClient.newCallResponse {
             url(lastReleaseUrl)
         }
@@ -88,7 +88,7 @@ object AppUpdateGitHub : AppUpdate.AppUpdateInterface {
     }
 
     private suspend fun getAllReleases(): List<AppReleaseInfo> {
-        val latestReleaseUrl = "https://api.github.com/repos/Suml-1/Legado_Max/releases?per_page=20"
+        val latestReleaseUrl = "https://api.github.com/repos/miniscale/Legado_Max/releases?per_page=20"
         val res = okHttpClient.newCallResponse {
             url(latestReleaseUrl)
         }
