@@ -16,7 +16,6 @@ jobs:
       - name: Sync fork with upstream
         uses: tgymnich/fork-sync@v2
         with:
-          token: ${{ secrets.PAT_TOKEN }}   # 关键：使用 PAT，而非默认 GITHUB_TOKEN
           owner: Suml-1          # 上游仓库的所有者
           repo: Legado_Max       # 上游仓库的名称（与你 fork 后的仓库名通常相同）
           head: main             # 上游仓库的分支（请根据实际情况确认，通常是 main 或 master）
