@@ -1,0 +1,25 @@
+name: Sync Upstream (保留本地修改)
+
+on:
+  schedule:
+    # 每 15 分钟检查一次上游是否有更新（GitHub Actions 的最小调度间隔约为 5 分钟，实际可能有延迟）
+    - cron: '*/15 * * * *'
+  workflow_dispatch: # 保留一个手动触发按钮，方便首次测试
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Sync fork with upstream
+        uses: tgymnich/fork-sync@v2
+        with:
+          owner: Suml-1          # 上游仓库的所有者
+          repo: Legado_Max       # 上游仓库的名称（与你 fork 后的仓库名通常相同）
+          head: main             # 上游仓库的分支（请根据实际情况确认，通常是 main 或 master）
+          base: main             # 你仓库中需要同步的分支
+          merge_method: merge    # 关键：使用 merge 策略，保留双方的提交历史
+          auto_merge: true       # 无冲突时自动合并；有冲突时 PR 会保留，等待手动处理
+          ignore_fail: true      # 即使同步遇到冲突，工作流也不会被标记为“失败”，避免频繁的通知打扰
