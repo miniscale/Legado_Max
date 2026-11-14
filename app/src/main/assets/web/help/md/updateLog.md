@@ -25,8 +25,10 @@
 - [Github分支Suml-1](https://github.com/Suml-1/Legado_Max)
 
 **2026/11/14**
-### 这几天关于js引擎和js书源的提交直接参考了[NG版本](https://github.com/joestar817/legado_NG)
+#### 这几天关于js引擎和js书源的提交直接参考了[NG版本](https://github.com/joestar817/legado_NG),定时任务参考[LegadoT](https://github.com/skybbk1001/legadoT)
 
+- feat(定时任务): 新增定时任务管理（我的-精准管理-定时任务管理）：按 cron 表达式（分 时 日 月 周）定时执行一段 JS 脚本，支持 refreshToc/notify 返回协议；列表页支持搜索、多选批量启停/改 Cron/导出、拖拽排序，编辑页支持登录、调试与全屏脚本编辑；后台执行总开关在定时任务管理右上角菜单；Android 15+ 用精确闹钟驱动 shortService 执行（含 90 秒单任务预算与断点续跑），旧系统用前台常驻循环；开机/换包/时区变化自动恢复布防（数据库 v103）
+- fix(高亮规则): 修复九宫格气泡背景在行末/行首被截断——匹配段排到行末且延续到下一行时，排版期压缩行宽预留右角宽度；续行行首落在气泡段里时（强制策略）整体右移行内容预留左角宽度（参考 MD3 分支的 exceed 预留做法），行首/行末都照常画出完整的角装饰，不再溢出屏幕被裁掉；此前智能策略会把角压扁、强制策略会把角溢出屏幕裁掉
 - feat(书源编辑): 新增「源编辑长代码截断」开关（我的-其他设置，默认关闭）：书源与订阅源编辑页的超长字段默认直接显示全文，开启后超过 1000 字符的字段改为只读预览，避免超大文本排版卡顿
 - feat(登录界面 v2): 支持 JS 源用 `loginUi(state)` / `loginAction(action, state, form)` 驱动登录界面，无 `loginUrl` 也能显示登录入口（`book_sources_part` 视图同步识别，数据库 v102）；番茄直连等 NGJS 格式书源恢复「刷新设备 / 开启段评 / 关闭段评」等入口
 - docs(JS模板): 「新建 JS 书源」模板扩充为完整能力说明（绑定与 java.* 清单、引擎已知坑、config 常用字段含 exploreUrl 布局与 jsLib、登录界面 v2、空作用域沙箱），模板正文移到 assets/js_source_template.js 单一来源
