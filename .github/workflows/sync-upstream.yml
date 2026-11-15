@@ -2,7 +2,7 @@ name: Sync Upstream (保留本地修改)
 
 on:
   schedule:
-    - cron: '0 */1 * * *' # 每1小时运行一次
+    - cron: '0 */6 * * *' 
   workflow_dispatch:
 
 jobs:
@@ -10,30 +10,41 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: write # 允许触发其他 Actions
     steps:
       - name: Checkout target repo
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          
       - name: Sync Upstream via git
         run: |
-          # 1. 设置 Git 用户信息，用于记录合并提交
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # 2. 添加上游仓库地址
           git remote add upstream https://github.com/Suml-1/Legado_Max.git
-          
-          # 3. 获取上游最新代码
           git fetch upstream main
           
-          # 4. 尝试合并上游代码 (--no-edit 表示使用默认提交信息)
           echo "开始合并上游代码..."
-          git merge upstream/main --no-edit || {
-            echo "::error::❌ 合并发生冲突！请手动在本地解决冲突，或者前往 GitHub 仓库手动创建 PR 解决。"
+          # 如果上游没有更新，merge 会返回 "Already up to date."
+          MERGE_RESULT=$(git merge upstream/main --no-edit 2>&1) || {
+            echo "::error::❌ 合并发生冲突！请手动解决。"
             exit 1
           }
+          echo "$MERGE_RESULT"
           
-          # 5. 推送到你的仓库
-          echo "合并成功，正在推送到你的仓库..."
-          git push origin main
+          # 如果合并结果不是 Already up to date，说明有新代码，才执行推送
+          if [[ "$MERGE_RESULT" != *"Already up to date"* ]]; then
+            echo "合并成功，正在推送到你的仓库..."
+            git push origin main
+            
+            # 👇 推送完成后，调用 API 触发 Test Build
+            # 注意：请把 "test-build.yml" 替换为你 Test Build 工作流实际的文件名
+            echo "触发 Test Build 工作流..."
+            curl -X POST \
+              -H "Accept: application/vnd.github.v3+json" \
+              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              https://api.github.com/repos/${{ github.repository }}/actions/workflows/test-build.yml/dispatches \
+              -d '{"ref":"main"}'
+          else
+            echo "上游没有更新，跳过推送和触发。"
+          fi
