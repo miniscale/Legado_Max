@@ -1,9 +1,14 @@
 package io.legado.app.base
 
 import android.content.Intent
+import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import io.legado.app.help.config.AppConfig
 import io.legado.app.ui.theme.initLegadoComposeTheme
 import io.legado.app.ui.theme.setLegadoContent
 
@@ -44,6 +49,17 @@ abstract class BaseComposeActivity : AppCompatActivity() {
         setLegadoContent(overlayAlpha = composeOverlayAlpha()) {
             ComposeContent()
         }
+
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.navigationBarColor = Color.TRANSPARENT
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            window.isNavigationBarContrastEnforced = false
+        }
+
+        // 强制系统按键图标颜色（如果是深色背景用白色，浅色背景用黑色）
+        val controller = WindowInsetsControllerCompat(window, window.decorView)
+        // 这里假设根据你的全局配置判断，如果是浅色主题，就把系统按键变成深色
+        controller.isAppearanceLightNavigationBars = !AppConfig.isNightTheme
     }
 
     /**

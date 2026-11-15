@@ -2,7 +2,6 @@ package io.legado.app.ui.file
 
 import android.os.Bundle
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.core.content.FileProvider
 import androidx.lifecycle.Lifecycle
@@ -10,16 +9,14 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import io.legado.app.base.BaseComposeActivity
 import io.legado.app.constant.AppConst
-import io.legado.app.ui.theme.LegadoThemeWithBackground
-import io.legado.app.ui.theme.initLegadoComposeTheme
-import io.legado.app.ui.theme.setLegadoContent
 import io.legado.app.utils.openFileUri
 import io.legado.app.utils.sendToClip
 import io.legado.app.utils.toastOnUi
 import kotlinx.coroutines.launch
 
-class FileManageActivity : AppCompatActivity() {
+class FileManageActivity : BaseComposeActivity() {
 
     // 根目录为应用外部存储目录的父目录；构造注入便于 JVM 单测替换（testing.md §16）
     private val viewModel: FileManageViewModel by viewModels {
@@ -28,18 +25,17 @@ class FileManageActivity : AppCompatActivity() {
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        initLegadoComposeTheme()
-        super.onCreate(savedInstanceState)
-        val initialPath = intent.getStringExtra(EXTRA_INITIAL_PATH)
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
         collectEvents()
-        setLegadoContent {
-            FileManageScreen(
-                viewModel = viewModel,
-                initialPath = initialPath,
-                onBackClick = { finish() }
-            )
-        }
+    }
+
+    @Composable
+    override fun ComposeContent() {
+        FileManageScreen(
+            viewModel = viewModel,
+            initialPath = intent.getStringExtra(EXTRA_INITIAL_PATH),
+            onBackClick = { finish() }
+        )
     }
 
     /** 收集 ViewModel 一次性事件并执行平台操作（§4.4） */
@@ -74,20 +70,5 @@ class FileManageActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_INITIAL_PATH = "initialPath"
-    }
-}
-
-@Composable
-fun FileManageContent(
-    viewModel: FileManageViewModel,
-    initialPath: String? = null,
-    onBackClick: () -> Unit
-) {
-    LegadoThemeWithBackground(backgroundDrawable = null) {
-        FileManageScreen(
-            viewModel = viewModel,
-            initialPath = initialPath,
-            onBackClick = onBackClick
-        )
     }
 }

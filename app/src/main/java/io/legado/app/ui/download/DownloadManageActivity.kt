@@ -10,29 +10,34 @@ import android.os.Bundle
 import android.webkit.MimeTypeMap
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.Composable
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import io.legado.app.R
+import io.legado.app.base.BaseComposeActivity
 import io.legado.app.service.DownloadState
 import io.legado.app.ui.theme.initLegadoComposeTheme
 import io.legado.app.ui.theme.setLegadoContent
 import io.legado.app.utils.toastOnUi
 import kotlinx.coroutines.launch
 
-class DownloadManageActivity : AppCompatActivity() {
+class DownloadManageActivity : BaseComposeActivity() {
 
     private val viewModel: DownloadManageViewModel by viewModels {
         DownloadManageViewModel.Factory
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        initLegadoComposeTheme()
-        super.onCreate(savedInstanceState)
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
         collectEvents()
-        setLegadoContent {
-            DownloadManageScreen(viewModel = viewModel, onBackClick = { finish() })
-        }
+    }
+
+    @Composable
+    override fun ComposeContent() {
+        DownloadManageScreen(
+            viewModel = viewModel,
+            onBackClick = { finish() }
+        )
     }
 
     /**
@@ -78,7 +83,7 @@ class DownloadManageActivity : AppCompatActivity() {
         }
     }
 
-private fun openFolder() {
+    private fun openFolder() {
         // MediaStore.Downloads 从 API 29 才有；低版本直接走下载管理器降级
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             openDownloadsManager()

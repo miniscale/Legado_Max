@@ -2,28 +2,30 @@ package io.legado.app.ui.source.recycle
 
 import android.os.Bundle
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.Composable
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import io.legado.app.ui.theme.initLegadoComposeTheme
-import io.legado.app.ui.theme.setLegadoContent
+import io.legado.app.base.BaseComposeActivity
 import io.legado.app.utils.toastOnUi
 import kotlinx.coroutines.launch
 
-class SourceRecycleBinActivity : AppCompatActivity() {
+class SourceRecycleBinActivity : BaseComposeActivity() {
 
     private val viewModel: SourceRecycleBinViewModel by viewModels {
         SourceRecycleBinViewModel.Factory
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        initLegadoComposeTheme()
-        super.onCreate(savedInstanceState)
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
         collectToasts()
-        setLegadoContent {
-            SourceRecycleBinScreen(viewModel = viewModel, onBackClick = { finish() })
-        }
+    }
+
+    @Composable
+    override fun ComposeContent() {
+        SourceRecycleBinScreen(
+            viewModel = viewModel,
+            onBackClick = { finish() }
+        )
     }
 
     /** 收集 Toast 事件并在主线程执行（ViewModel 只抛事件，§4.1/§4.4） */
@@ -35,4 +37,3 @@ class SourceRecycleBinActivity : AppCompatActivity() {
         }
     }
 }
-
