@@ -235,6 +235,12 @@ object BookHelp {
             val matcher = AppPattern.imgPattern.matcher(content)
             while (matcher.find()) {
                 val src = matcher.group(1) ?: continue
+
+                // 过滤掉本地的 dp 和 bubble 协议，不进行下载
+                if (src.startsWith("dp:", ignoreCase = true) || src.startsWith("bubble:", ignoreCase = true)) {
+                    continue
+                }
+
                 val mSrc = NetworkUtils.getAbsoluteURL(bookChapter.url, src)
                 emit(mSrc)
             }
@@ -259,7 +265,8 @@ object BookHelp {
         src: String,
         chapter: BookChapter? = null
     ) {
-        if (isImageExist(book, src)) {
+        // 截 dp 和 bubble 协议
+        if (src.startsWith("dp:", ignoreCase = true) || src.startsWith("bubble:", ignoreCase = true)) {
             return
         }
         val mutex = synchronized(this) {
@@ -438,6 +445,12 @@ object BookHelp {
             val matcher = AppPattern.imgPattern.matcher(it)
             while (matcher.find()) {
                 val src = matcher.group(1)!!
+
+                // 跳过 dp 和 bubble 协议
+                if (src.startsWith("dp:", ignoreCase = true) || src.startsWith("bubble:", ignoreCase = true)) {
+                    continue
+                }
+
                 val image = getImage(book, src)
                 if (!image.exists()) {
                     ret = false
