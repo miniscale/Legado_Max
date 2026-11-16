@@ -1,29 +1,36 @@
 # 更新日志
 
-### cronet版本: 128.0.6613.40
+<details>
+<summary><b>插件版本</b></summary>
 
-### minSdk 23 | compileSdk 37 | targetSdk 37
+**cronet版本:** 128.0.6613.40
 
-### Kotlin版本: 2.3.10 | HtmlUnit Rhino(core-js)版本: 5.3.0-legado.4 | Compose BOM版本: 2026.08.00 | Compose UI 版本: 1.12.x | Material3 版本: 1.4.x | okhttp版本: 5.3.2
+**minSdk 23 | compileSdk 37 | targetSdk 37**
 
-### 项目继承历史
+**Kotlin版本:** 2.3.10 | **HtmlUnit Rhino(core-js)版本:** 5.3.0-legado.4 | **Compose BOM版本:** 2026.08.00 | **Compose UI 版本:** 1.12.x | **Material3 版本:** 1.4.x | **okhttp版本:** 5.3.2
 
-##### 原版
+</details>
+
+<details>
+<summary><b>项目继承历史</b></summary>
+
+**原版**
 
 - [Github](https://github.com/gedoor/legado)
 
-##### Sigma版
+**Sigma版**
 
 - [Github](https://github.com/Luoyacheng/legado)
 - [Gitee](https://gitee.com/lyc486/legado/releases)
 - [详细日志](https://gitee.com/lyc486/legado/commits/main)
 
-##### Max版
+**Max版**
 
 - [Github主干youfengknight](https://github.com/youfengknight/Legado_Max)
 - [Github分支GEd520](https://github.com/GEd520/legados)
 - [Github分支Suml-1](https://github.com/Suml-1/Legado_Max)
 
+</details>
 **2026/11/16**
 
 - fix(发现): 修复筛选类书源（如分类按钮从 infoMap 读配置的源）重启应用后再进分类报「JSON.parse 报错 Unexpected token: u」——分类 JS 的结果有磁盘缓存、重启后不再执行，而它写入 infoMap 的配置数据从未持久化；现在分类 JS 执行后立即持久化 infoMap，已处于坏状态的用户会在下次进入该源分类时自动重跑一次分类 JS 自愈

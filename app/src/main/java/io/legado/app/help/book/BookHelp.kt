@@ -7,6 +7,7 @@ import com.script.rhino.RhinoInterruptError
 import com.script.rhino.runScriptWithContext
 import io.legado.app.constant.AppLog
 import io.legado.app.constant.AppPattern
+import io.legado.app.constant.AppPattern.noWordCountRegex
 import io.legado.app.constant.EventBus
 import io.legado.app.data.appDb
 import io.legado.app.data.entities.Book
@@ -232,7 +233,9 @@ object BookHelp {
             bookChapter.getFileName(),
         ).writeText(content)
         if (book.isOnLineTxt && AppConfig.tocCountWords) {
-            val wordCount = StringUtils.wordCountFormat(content.length)
+            // 使用 noWordCountRegex 过滤掉 HTML 标签和图片数据后再统计字数
+            val pureLength = content.replace(noWordCountRegex, "").length
+            val wordCount = StringUtils.wordCountFormat(pureLength.toString())
             bookChapter.wordCount = wordCount
             appDb.bookChapterDao.upWordCount(bookChapter.bookUrl, bookChapter.url, wordCount)
         }
