@@ -365,6 +365,11 @@ jobs:
           name: legado_app_${{ env.VERSIONL }}
           tag_name: beta-${{ env.VERSIONL }}
           body: |
+            ### 更新内容
+            ${{ fromJSON(needs.prepare.outputs.updateLog_content) }}
+
+            ${{ fromJSON(needs.prepare.outputs.contributors_content || '""') }}
+            
             ⚠️ **重要提醒：安装前请务必备份您的数据！**
 
             📦 **APK版本说明：**
@@ -385,11 +390,6 @@ jobs:
             | universal | 包含所有ABI的通用包（体积较大，兼容所有设备） |
 
             请根据您的设备架构选择对应的APK安装。如果不确定设备架构，请选择 universal 版本。
-
-            ### 更新内容
-            ${{ fromJSON(needs.prepare.outputs.updateLog_content) }}
-
-            ${{ fromJSON(needs.prepare.outputs.contributors_content || '""') }}
           prerelease: true
           files: ${{ github.workspace }}/apk/*.apk
           fail_on_unmatched_files: true

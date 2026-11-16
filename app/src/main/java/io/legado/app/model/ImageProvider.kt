@@ -159,6 +159,12 @@ object ImageProvider {
     ): File {
         return withContext(IO) {
             val vFile = BookHelp.getImage(book, src)
+
+            // 拦截 dp: 协议，不进行任何下载操作
+            if (src.startsWith("dp:", ignoreCase = true)) {
+                return@withContext vFile
+            }
+
             if (!BookHelp.isImageExist(book, src)) {
                 val inputStream = when {
                     book.isEpub -> EpubFile.getImage(book, src)
@@ -191,6 +197,12 @@ object ImageProvider {
         if (ParagraphBubbleRenderer.isBubbleSrc(src)) {
             return ParagraphBubbleRenderer.getSize(src)
         }
+
+        // 拦截 dp: 协议，返回 0 尺寸
+        if (src.startsWith("dp:", ignoreCase = true)) {
+            return Size(0, 0)
+        }
+
         val file = cacheImage(book, src, bookSource)
         val op = BitmapFactory.Options()
         // inJustDecodeBounds如果设置为true,仅仅返回图片实际的宽和高,宽和高是赋值给opts.outWidth,opts.outHeight;
@@ -212,6 +224,11 @@ object ImageProvider {
         src: String,
         bookSource: BookSource?
     ): Boolean {
+        // 拦截 dp: 协议
+        if (src.startsWith("dp:", ignoreCase = true)) {
+            return false
+        }
+
         val file = cacheImage(book, src, bookSource)
         return isGifFile(file)
     }
@@ -277,6 +294,12 @@ object ImageProvider {
                 put(cacheKey, errorBitmap)
             }.getOrDefault(errorBitmap)
         }
+
+        // 拦截 dp: 协议，返回错误占位图
+        if (src.startsWith("dp:", ignoreCase = true)) {
+            return errorBitmap
+        }
+
         //src为空白时 可能被净化替换掉了 或者规则失效
         if (book.getUseReplaceRule() && src.isBlank()) {
             book.setUseReplaceRule(false)
