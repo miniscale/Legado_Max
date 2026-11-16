@@ -175,6 +175,13 @@ object NetworkUtils {
     fun getAbsoluteURL(baseURL: URL?, relativePath: String): String {
         val relativePathTrim = relativePath.trim()
         if (baseURL == null) return relativePathTrim
+
+        // 拦截自定义协议，不进行 URL 拼接，直接原样返回
+        if (relativePathTrim.startsWith("dp:", ignoreCase = true) ||
+            relativePathTrim.startsWith("bubble:", ignoreCase = true)) {
+            return relativePathTrim
+        }
+
         if (relativePathTrim.isAbsUrl()) return relativePathTrim
         if (relativePathTrim.isDataUrl()) return relativePathTrim
         if (relativePathTrim.startsWith("javascript")) return ""

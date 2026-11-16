@@ -159,7 +159,9 @@ object BookHelp {
         }
     }
 
-    //清除已经看过的漫画数据
+    /**
+     * 清除已经看过的漫画数据
+     */
     private fun clearComicCache(book: Book) {
         //只处理漫画
         //为0的时候，不清除已缓存数据
@@ -178,6 +180,12 @@ object BookHelp {
                 val matcher = AppPattern.imgPattern.matcher(content)
                 while (matcher.find()) {
                     val src = matcher.group(1) ?: continue
+
+                    // 跳过 dp 和 bubble 协议
+                    if (src.startsWith("dp:", ignoreCase = true) || src.startsWith("bubble:", ignoreCase = true)) {
+                        continue
+                    }
+
                     val mSrc = NetworkUtils.getAbsoluteURL(it.url, src)
                     imgNames.add("${MD5Utils.md5Encode16(mSrc)}.${getImageSuffix(mSrc)}")
                 }
