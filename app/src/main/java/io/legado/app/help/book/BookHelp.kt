@@ -225,7 +225,7 @@ object BookHelp {
         content: String
     ) {
         if (content.isEmpty()) return
-        //保存文本
+        // 保存文本
         FileUtils.createFileIfNotExist(
             downloadDir,
             cacheFolderName,
@@ -233,8 +233,11 @@ object BookHelp {
             bookChapter.getFileName(),
         ).writeText(content)
         if (book.isOnLineTxt && AppConfig.tocCountWords) {
-            // 使用 noWordCountRegex 过滤掉 HTML 标签和图片数据后再统计字数
-            val pureLength = content.replace(noWordCountRegex, "").length
+            // 先移除完整图片标签（包含段评图片数据），再过滤空白及零宽字符。
+            val pureLength = AppPattern.imgPattern.matcher(content)
+                .replaceAll("")
+                .replace(noWordCountRegex, "")
+                .length
             val wordCount = StringUtils.wordCountFormat(pureLength.toString())
             bookChapter.wordCount = wordCount
             appDb.bookChapterDao.upWordCount(bookChapter.bookUrl, bookChapter.url, wordCount)
